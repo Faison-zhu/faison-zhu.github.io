@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月光宝盒AI — 无限画布 AI 智能体 | 节点式创作工作流</title>
+<meta name="description" content="月光宝盒AI：无限画布式 AI 智能体平台。对话即创作，自由画布、多模型调度，让 AI 图像与视频生成像搭积木一样简单。">
+<style>
+  :root {
+    --bg: #0a0a14;
+    --panel: rgba(255,255,255,0.05);
+    --border: rgba(140,130,255,0.25);
+    --primary: #6c6cff;
+    --primary-2: #9d5cff;
+    --text: #e8e8f5;
+    --text-dim: #9a9ab5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 6vw;
+    background: rgba(10,10,20,0.75);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(140,130,255,0.12);
+  }
+  .logo { font-weight:700; font-size:18px; letter-spacing:1px; }
+  .logo .dot { color: var(--primary); }
+  nav .links a { color: var(--text-dim); text-decoration:none; margin-left:28px; font-size:14px; transition:color .2s; }
+  nav .links a:hover { color: var(--text); }
+  .btn {
+    display:inline-block; padding:12px 32px; border-radius:10px;
+    text-decoration:none; font-weight:600; font-size:15px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color:#fff; box-shadow: 0 4px 24px rgba(108,108,255,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,108,255,0.55); }
+  .btn-ghost {
+    color: var(--text); border:1px solid var(--border);
+    background: var(--panel); backdrop-filter: blur(8px);
+  }
+  .btn-ghost:hover { border-color: var(--primary); }
+  header {
+    min-height: 100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding: 120px 6vw 60px;
+    position:relative;
+  }
+  header::before {
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(108,108,255,0.18), transparent),
+      radial-gradient(ellipse 40% 30% at 80% 60%, rgba(157,92,255,0.12), transparent);
+    pointer-events:none;
+  }
+  .badge {
+    display:inline-block; padding:6px 18px; border-radius:999px;
+    border:1px solid var(--border); background:var(--panel);
+    font-size:13px; color:var(--text-dim); margin-bottom:28px;
+  }
+  h1 { font-size: clamp(36px, 6vw, 64px); font-weight:800; line-height:1.25; }
+  h1 .grad {
+    background: linear-gradient(90deg, #8ab4ff, var(--primary), var(--primary-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub { max-width:640px; margin:24px auto 40px; color:var(--text-dim); font-size:17px; }
+  .cta { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .canvas-demo { margin-top:70px; width:min(820px,92vw); }
+  section { padding: 90px 6vw; max-width:1100px; margin:0 auto; }
+  h2 { font-size:32px; font-weight:700; text-align:center; margin-bottom:14px; }
+  .sec-sub { text-align:center; color:var(--text-dim); margin-bottom:56px; font-size:15px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; }
+  .card {
+    background: var(--panel); border:1px solid rgba(140,130,255,0.15);
+    border-radius:16px; padding:32px 28px;
+    backdrop-filter: blur(12px);
+    transition: border-color .25s, transform .25s;
+  }
+  .card:hover { border-color: var(--primary); transform: translateY(-4px); }
+  .card .icon { font-size:30px; margin-bottom:16px; }
+  .card h3 { font-size:18px; margin-bottom:10px; }
+  .card p { color:var(--text-dim); font-size:14.5px; }
+  .steps { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; }
+  .step {
+    flex:1 1 240px; max-width:320px;
+    background:var(--panel); border:1px solid rgba(140,130,255,0.15);
+    border-radius:14px; padding:26px; text-align:center;
+  }
+  .step .num {
+    width:40px; height:40px; margin:0 auto 14px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    font-weight:700;
+  }
+  .step h3 { font-size:16px; margin-bottom:8px; }
+  .step p { color:var(--text-dim); font-size:13.5px; }
+  .final { text-align:center; padding:100px 6vw 120px; }
+  .final h2 { font-size:36px; margin-bottom:16px; }
+  .final p { color:var(--text-dim); margin-bottom:36px; }
+  footer {
+    border-top:1px solid rgba(140,130,255,0.12);
+    padding:28px 6vw; text-align:center;
+    color:var(--text-dim); font-size:13px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">月光宝盒AI<span class="dot">.</span></div>
+  <div class="links">
+    <a href="#features">特性</a>
+    <a href="#how">上手</a>
+    <a href="https://ygbhai.com/" class="btn btn-primary" style="padding:8px 22px;font-size:14px;">立即体验</a>
+  </div>
+</nav>
+
+<header>
+  <div class="badge">节点式 AI 创作工作流</div>
+  <h1>让 AI 生成像<span class="grad">搭积木</span>一样简单</h1>
+  <p class="sub">
+    月光宝盒AI 是一款无限画布式的 AI 智能体平台——对话即创作：让 AI 帮你生成图像、视频、
+    整理画布，也能自己动手拖拽连线。自由拖拽、随意组合、所见即所得。
+  </p>
+  <div class="cta">
+    <a class="btn btn-primary" href="https://ygbhai.com/">打开画布 →</a>
+    <a class="btn btn-ghost" href="#features">了解特性</a>
+  </div>
+
+  <svg class="canvas-demo" viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#9d5cff"/>
+      </linearGradient>
+      <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <path d="M225 90 C 320 90, 330 120, 420 120" stroke="url(#lg)" stroke-width="2.5" fill="none" filter="url(#glow)"/>
+    <path d="M225 250 C 320 250, 330 170, 420 155" stroke="url(#lg)" stroke-width="2.5" fill="none" filter="url(#glow)"/>
+    <path d="M570 137 C 640 137, 640 137, 700 137" stroke="url(#lg)" stroke-width="2.5" fill="none" filter="url(#glow)"/>
+    <g>
+      <rect x="60" y="55" width="165" height="70" rx="12" fill="#161628" stroke="rgba(140,130,255,0.35)"/>
+      <text x="80" y="85" fill="#e8e8f5" font-size="14" font-weight="600">提示词输入</text>
+      <text x="80" y="107" fill="#9a9ab5" font-size="11">Text Prompt</text>
+    </g>
+    <g>
+      <rect x="60" y="215" width="165" height="70" rx="12" fill="#161628" stroke="rgba(140,130,255,0.35)"/>
+      <text x="80" y="245" fill="#e8e8f5" font-size="14" font-weight="600">参考图像</text>
+      <text x="80" y="267" fill="#9a9ab5" font-size="11">Image Input</text>
+    </g>
+    <g>
+      <rect x="420" y="90" width="150" height="90" rx="12" fill="#1c1c33" stroke="rgba(157,92,255,0.5)"/>
+      <text x="440" y="125" fill="#e8e8f5" font-size="14" font-weight="600">AI 生成</text>
+      <text x="440" y="147" fill="#9a9ab5" font-size="11">Text to Image</text>
+      <text x="440" y="165" fill="#9a9ab5" font-size="11">Model Node</text>
+    </g>
+    <g>
+      <rect x="700" y="100" width="110" height="74" rx="12" fill="#161628" stroke="rgba(140,130,255,0.35)"/>
+      <text x="718" y="132" fill="#e8e8f5" font-size="13" font-weight="600">输出</text>
+      <text x="718" y="152" fill="#9a9ab5" font-size="11">Result</text>
+    </g>
+    <circle cx="225" cy="90" r="5" fill="#5b8cff"/>
+    <circle cx="225" cy="250" r="5" fill="#5b8cff"/>
+    <circle cx="420" cy="120" r="5" fill="#9d5cff"/>
+    <circle cx="420" cy="155" r="5" fill="#9d5cff"/>
+    <circle cx="700" cy="137" r="5" fill="#5b8cff"/>
+  </svg>
+</header>
+
+<section id="features">
+  <h2>为什么用节点画布？</h2>
+  <p class="sec-sub">把复杂的 AI 生成过程拆成可视化模块，直觉操作，随时调整</p>
+  <div class="grid">
+    <div class="card">
+      <div class="icon">模块化工作流</div>
+      <h3>模块化工作流</h3>
+      <p>提示词、模型、后处理各自独立成节点。换模型不动提示词，调参数不重来——只重跑你改的那一步。</p>
+    </div>
+    <div class="card">
+      <div class="icon">无限画布</div>
+      <h3>无限画布自由拖拽</h3>
+      <p>画布没有边界，工作流多大都能装。缩放、平移、框选，像 Figma 一样顺手。</p>
+    </div>
+    <div class="card">
+      <div class="icon">可视化连线</div>
+      <h3>可视化连线</h3>
+      <p>拖一条线，数据就流动起来。谁输入给谁、流向哪里，一眼看懂，告别黑盒。</p>
+    </div>
+    <div class="card">
+      <div class="icon">模板复用</div>
+      <h3>可复用可分享</h3>
+      <p>搭好的工作流保存为模板，下次一键加载；以后还能导出分享给其他人。</p>
+    </div>
+    <div class="card">
+      <div class="icon">图像视频</div>
+      <h3>图像与视频生成</h3>
+      <p>文生图、图生图、图生视频逐步接入，一个画布串起完整创作管线。</p>
+    </div>
+    <div class="card">
+      <div class="icon">即开即用</div>
+      <h3>浏览器即开即用</h3>
+      <p>无需安装，打开网页就能用。你的工作流保存在云端，换台电脑接着画。</p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <h2>三步开始创作</h2>
+  <p class="sec-sub">不需要任何编程基础</p>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>添加节点</h3>
+      <p>从节点库拖出提示词、模型、图像等模块，放到画布任意位置。</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>连线组合</h3>
+      <p>把节点连成你想要的处理流程，比如：提示词 → 文生图 → 放大 → 输出。</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>运行出图</h3>
+      <p>点一下运行，结果直接显示在画布上，不满意就改节点局部重跑。</p>
+    </div>
+  </div>
+</section>
+
+<div class="final">
+  <h2>现在就打开你的画布</h2>
+  <p>免费体验，对话即可开始创作</p>
+  <a class="btn btn-primary" href="https://ygbhai.com/" style="font-size:17px;padding:16px 48px;">立即体验月光宝盒AI →</a>
+</div>
+
+<footer>
+  © 2026 月光宝盒AI · 无限画布 AI 智能体
+</footer>
+
+</body>
+      </html>
